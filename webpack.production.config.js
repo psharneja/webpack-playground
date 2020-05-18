@@ -3,13 +3,23 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
-  entry: "./src/index.js",
+  entry: {
+    "hello-world": "./src/hello-world.js",
+    kiwi: "./src/kiwi.js",
+  },
   output: {
-    filename: "bundle.[contenthash].js",
+    filename: "[name].[contenthash].js",
     path: path.resolve(__dirname, "./dist"),
     publicPath: "",
   },
   mode: "production", // 'production' 'none'
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      minSize: 10000,
+      automaticNameDelimiter: '_'
+    }
+  },
   module: {
     rules: [
       {
@@ -38,10 +48,11 @@ module.exports = {
             plugins: ["transform-class-properties"],
           },
         },
-      },{
-          test: /\.hbs$/,
-          use: ["handlebars-loader"]
-      }
+      },
+      {
+        test: /\.hbs$/,
+        use: ["handlebars-loader"],
+      },
       // ,{
       //     test: /\.(xml)$/,
       //     use: [
@@ -52,7 +63,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "styles.[contenthash].css",
+      filename: "[name].[contenthash].css",
     }),
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: [
@@ -68,10 +79,18 @@ module.exports = {
     //   },
     // }),
     new HtmlWebpackPlugin({
-        title: "hello friends!",
-        filename: "index.html",
-        template:"src/index.hbs",
-          description: "some data descirpont",
-      }),
+      title: "hello friends!",
+      chunks: ['hello-world', 'vendors~hello-world~kiwi'],
+      filename: "hello-world.html",
+      template: "src/page-template.hbs",
+      description: "some data descirpont",
+    }),
+    new HtmlWebpackPlugin({
+      title: "hello kiwi!",
+      chunks: ['kiwi', 'vendors~hello-world~kiwi'],
+      filename: "kiwi.html",
+      template: "src/page-template.hbs",
+      description: "some data descirpont",
+    }),
   ],
 };
